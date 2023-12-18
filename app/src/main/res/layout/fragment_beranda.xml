@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primaryBackground"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".BerandaFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:orientation="horizontal"
+            android:background="@color/colorPrimary">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/bat_logo"
+                android:layout_margin="5dp"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Selamat datang admin"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="10dp"
+                android:textSize="18sp"
+                />
+            <TextView
+                android:id="@+id/tvNamaAdmin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Admin"
+                android:layout_marginStart="5dp"
+                android:textStyle="bold"
+                android:layout_marginTop="20dp"
+                android:textSize="18sp"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:background="#D3D3D3"
+            app:layout_constraintTop_toBottomOf="@+id/topbar"
+            android:orientation="horizontal" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical"
+            android:paddingHorizontal="0dp">
+            <Button
+                style="@style/White.Button"
+                android:id="@+id/btnKelolaPesanan"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Kelola Pesanan"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#D3D3D3"
+            app:layout_constraintTop_toBottomOf="@+id/topbar"
+            android:orientation="horizontal" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical"
+            android:paddingHorizontal="0dp">
+            <Button
+                style="@style/White.Button"
+                android:id="@+id/btnUbahHarga"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Kelola Harga Produk"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#D3D3D3"
+            app:layout_constraintTop_toBottomOf="@+id/topbar"
+            android:orientation="horizontal" />
+
+
+    </LinearLayout>
+
+</FrameLayout>
