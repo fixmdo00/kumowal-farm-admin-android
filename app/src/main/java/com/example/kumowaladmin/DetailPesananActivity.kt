@@ -27,7 +27,17 @@ class DetailPesananActivity : AppCompatActivity() {
 
         val alamat_pengiriman = detail_pesanan.pengiriman_jalan + ", " + detail_pesanan.pengiriman_kelurahan + ", " + detail_pesanan.pengiriman_kecamatan + ", " + detail_pesanan.pengiriman_kabupaten + ", " + detail_pesanan.pengiriman_provinsi
         val banyaknya_produk = detail_pesanan.jumlah_produk.toString() + " " + SatuanProduk.getSatuan(detail_pesanan.jenis_produk)
-        val total_harga = "Rp " + NumberFormat.getNumberInstance(Locale.getDefault()).format(detail_pesanan.harga_satuan * detail_pesanan.jumlah_produk)
+        var total_harga = "Rp " + NumberFormat.getNumberInstance(Locale.getDefault()).format(detail_pesanan.harga_satuan * detail_pesanan.jumlah_produk)
+
+        when(detail_pesanan.penawaran_harga){
+            0 -> {
+                binding.containerHargaPenwaran.visibility = View.GONE
+            }
+            else -> {
+                binding.tvHargaPenawaran.text = "Rp " + NumberFormat.getNumberInstance(Locale.getDefault()).format(detail_pesanan.penawaran_harga)
+            }
+        }
+
         binding.tvStatus.text = StatusPesanan.getStatus(detail_pesanan.status)
         binding.tvAlamatPengiriman.text = alamat_pengiriman
         binding.tvJenisAlamatPengiriman.text = detail_pesanan.pengiriman_jenis
@@ -35,7 +45,7 @@ class DetailPesananActivity : AppCompatActivity() {
         binding.tvJenisProduk.text = detail_pesanan.jenis_produk.capitalize()
         binding.tvBanyaknyaProduk.text = banyaknya_produk
         binding.tvHargaSatuan.text = "Rp " + NumberFormat.getNumberInstance(Locale.getDefault()).format(detail_pesanan.harga_satuan)
-        binding.tvTotalHarga.text = total_harga.toString()
+        binding.tvTotalHarga.text = total_harga
         binding.tvNamaPemesan.text = detail_pesanan.nama_user
         binding.tvNamaPJ.text = detail_pesanan.nama_pj
 
@@ -43,12 +53,29 @@ class DetailPesananActivity : AppCompatActivity() {
             onBackPressed()
         }
 
+
+
         when(detail_pesanan.status){
             "1" -> {
                 binding.tvPesan.text = "Apakah ingin menerima pesanan ini ?"
                 binding.btnKonfirmasi.hint = "Terima Pesanan"
                 binding.btnKonfirmasi.setOnClickListener {
                     Pesanan.ubahStatus("2",detail_pesanan.id_pesanan, binding.loadingProgressBar){
+                        when (it){
+                            true -> {
+                                Toast.makeText(this,"Berhasil", Toast.LENGTH_LONG).show()
+                                Pesanan.getFromDB(binding.loadingProgressBar){}
+                                onBackPressed()
+                            }
+                            false -> {
+                                Toast.makeText(this,"Gagal", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+
+                binding.btnTolak.setOnClickListener {
+                    Pesanan.ubahStatus("0",detail_pesanan.id_pesanan, binding.loadingProgressBar){
                         when (it){
                             true -> {
                                 Toast.makeText(this,"Berhasil", Toast.LENGTH_LONG).show()
@@ -79,6 +106,7 @@ class DetailPesananActivity : AppCompatActivity() {
                         }
                     }
                 }
+                binding.btnTolak.visibility = View.GONE
             }
             "3" -> {
                 binding.containerBtn.visibility = View.GONE
@@ -86,7 +114,9 @@ class DetailPesananActivity : AppCompatActivity() {
             "4" -> {
                 binding.containerBtn.visibility = View.GONE
             }
+            "0" -> {
+                binding.containerBtn.visibility = View.GONE
+            }
         }
-
     }
 }
