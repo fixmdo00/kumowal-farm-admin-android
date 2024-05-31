@@ -148,7 +148,7 @@ class PesananFragment : Fragment() {
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            Pesanan.getFromDB(binding.loadingProgressBar){
+            Pesanan.getFromDB(){
                 pesananAdapter.list = Pesanan.getPesananArrayListByStatus(activeStatusWindow)
                 if(pesananAdapter.list.size == 0){
                     binding.tvPesananKosong.visibility = View.VISIBLE
@@ -243,6 +243,19 @@ class PesananFragment : Fragment() {
         } else {
             refreshJob?.cancel()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Hentikan autoRefresh ketika fragment berhenti
+        autoRefresh(false)
+    }
+
+    // Atau jika Anda lebih suka menghentikan autoRefresh saat view dihancurkan
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Hentikan autoRefresh ketika view dari fragment dihancurkan
+        autoRefresh(false)
     }
 
     companion object {
