@@ -3,6 +3,7 @@ package com.example.kumowaladmin
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,11 @@ import com.example.kumowaladmin.adapter.PesananAdapater
 import com.example.kumowaladmin.dataClass.PesananData
 import com.example.kumowaladmin.databinding.FragmentPesananBinding
 import com.example.kumowaladmin.`object`.Pesanan
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -40,6 +46,10 @@ class PesananFragment : Fragment() {
     private lateinit var colorSelected : ColorDrawable
     private lateinit var colorNotSelected : ColorDrawable
 
+    private var refreshing = false
+    private var refreshJob: Job? = null
+
+    private var activeStatusWindow = "1"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,21 +78,18 @@ class PesananFragment : Fragment() {
         pesananAdapter = PesananAdapater(pesananArrayList, this, binding.loadingProgressBar, requireContext())
         recyclerView.adapter = pesananAdapter
         Pesanan.livePesanan.observe(viewLifecycleOwner){
-            pesananAdapter.list = Pesanan.getPesananArrayListByStatus("1")
+            pesananAdapter.list = Pesanan.getPesananArrayListByStatus(activeStatusWindow)
             if(pesananAdapter.list.size == 0){
                 binding.tvPesananKosong.visibility = View.VISIBLE
             } else {
                 binding.tvPesananKosong.visibility = View.INVISIBLE
             }
             pesananAdapter.notifyDataSetChanged()
-            select(binding.topBtn1,binding.topBtn1Tv)
-            unselect(binding.topBtn2, binding.topBtn2Tv)
-            unselect(binding.topBtn3, binding.topBtn3Tv)
-            unselect(binding.topBtn4, binding.topBtn4Tv)
-            unselect(binding.topBtn5, binding.topBtn5Tv)
+            setActiveWindow(activeStatusWindow)
         }
 
         binding.topBtn1.setOnClickListener {
+            activeStatusWindow = "1"
             pesananAdapter.list = Pesanan.getPesananArrayListByStatus("1")
             if(pesananAdapter.list.size == 0){
                 binding.tvPesananKosong.visibility = View.VISIBLE
@@ -90,13 +97,10 @@ class PesananFragment : Fragment() {
                 binding.tvPesananKosong.visibility = View.INVISIBLE
             }
             pesananAdapter.notifyDataSetChanged()
-            select(binding.topBtn1,binding.topBtn1Tv)
-            unselect(binding.topBtn2, binding.topBtn2Tv)
-            unselect(binding.topBtn3, binding.topBtn3Tv)
-            unselect(binding.topBtn4, binding.topBtn4Tv)
-            unselect(binding.topBtn5, binding.topBtn5Tv)
+            setActiveWindow("1")
         }
         binding.topBtn2.setOnClickListener {
+            activeStatusWindow = "2"
             pesananAdapter.list = Pesanan.getPesananArrayListByStatus("2")
             if(pesananAdapter.list.size == 0){
                 binding.tvPesananKosong.visibility = View.VISIBLE
@@ -104,14 +108,11 @@ class PesananFragment : Fragment() {
                 binding.tvPesananKosong.visibility = View.INVISIBLE
             }
             pesananAdapter.notifyDataSetChanged()
-            unselect(binding.topBtn1,binding.topBtn1Tv)
-            select(binding.topBtn2, binding.topBtn2Tv)
-            unselect(binding.topBtn3, binding.topBtn3Tv)
-            unselect(binding.topBtn4, binding.topBtn4Tv)
-            unselect(binding.topBtn5, binding.topBtn5Tv)
+            setActiveWindow("2")
         }
 
         binding.topBtn3.setOnClickListener {
+            activeStatusWindow = "3"
             pesananAdapter.list = Pesanan.getPesananArrayListByStatus("3")
             if(pesananAdapter.list.size == 0){
                 binding.tvPesananKosong.visibility = View.VISIBLE
@@ -119,14 +120,11 @@ class PesananFragment : Fragment() {
                 binding.tvPesananKosong.visibility = View.INVISIBLE
             }
             pesananAdapter.notifyDataSetChanged()
-            unselect(binding.topBtn1,binding.topBtn1Tv)
-            unselect(binding.topBtn2, binding.topBtn2Tv)
-            select(binding.topBtn3, binding.topBtn3Tv)
-            unselect(binding.topBtn4, binding.topBtn4Tv)
-            unselect(binding.topBtn5, binding.topBtn5Tv)
+            setActiveWindow("3")
         }
 
         binding.topBtn4.setOnClickListener {
+            activeStatusWindow = "4"
             pesananAdapter.list = Pesanan.getPesananArrayListByStatus("4")
             if(pesananAdapter.list.size == 0){
                 binding.tvPesananKosong.visibility = View.VISIBLE
@@ -134,14 +132,11 @@ class PesananFragment : Fragment() {
                 binding.tvPesananKosong.visibility = View.INVISIBLE
             }
             pesananAdapter.notifyDataSetChanged()
-            unselect(binding.topBtn1,binding.topBtn1Tv)
-            unselect(binding.topBtn2, binding.topBtn2Tv)
-            unselect(binding.topBtn3, binding.topBtn3Tv)
-            select(binding.topBtn4, binding.topBtn4Tv)
-            unselect(binding.topBtn5, binding.topBtn5Tv)
+            setActiveWindow("4")
         }
 
         binding.topBtn5.setOnClickListener {
+            activeStatusWindow = "0"
             pesananAdapter.list = Pesanan.getPesananArrayListByStatus("0")
             if(pesananAdapter.list.size == 0){
                 binding.tvPesananKosong.visibility = View.VISIBLE
@@ -149,32 +144,69 @@ class PesananFragment : Fragment() {
                 binding.tvPesananKosong.visibility = View.INVISIBLE
             }
             pesananAdapter.notifyDataSetChanged()
-            unselect(binding.topBtn1,binding.topBtn1Tv)
-            unselect(binding.topBtn2, binding.topBtn2Tv)
-            unselect(binding.topBtn3, binding.topBtn3Tv)
-            unselect(binding.topBtn4, binding.topBtn4Tv)
-            select(binding.topBtn5, binding.topBtn5Tv)
+            setActiveWindow("0")
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             Pesanan.getFromDB(binding.loadingProgressBar){
-                pesananAdapter.list = Pesanan.getPesananArrayListByStatus("1")
+                pesananAdapter.list = Pesanan.getPesananArrayListByStatus(activeStatusWindow)
                 if(pesananAdapter.list.size == 0){
                     binding.tvPesananKosong.visibility = View.VISIBLE
                 } else {
                     binding.tvPesananKosong.visibility = View.INVISIBLE
                 }
                 pesananAdapter.notifyDataSetChanged()
+                setActiveWindow(activeStatusWindow)
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
+        }
+
+        autoRefresh(true)
+
+
+
+        return (binding.root)
+    }
+
+    fun setActiveWindow (status : String) {
+        when (status){
+            "0" -> {
+                unselect(binding.topBtn1,binding.topBtn1Tv)
+                unselect(binding.topBtn2, binding.topBtn2Tv)
+                unselect(binding.topBtn3, binding.topBtn3Tv)
+                unselect(binding.topBtn4, binding.topBtn4Tv)
+                select(binding.topBtn5, binding.topBtn5Tv)
+            }
+            "1" -> {
                 select(binding.topBtn1,binding.topBtn1Tv)
                 unselect(binding.topBtn2, binding.topBtn2Tv)
                 unselect(binding.topBtn3, binding.topBtn3Tv)
                 unselect(binding.topBtn4, binding.topBtn4Tv)
                 unselect(binding.topBtn5, binding.topBtn5Tv)
-                binding.swipeRefreshLayout.isRefreshing = false
+            }
+            "2" -> {
+                unselect(binding.topBtn1,binding.topBtn1Tv)
+                select(binding.topBtn2, binding.topBtn2Tv)
+                unselect(binding.topBtn3, binding.topBtn3Tv)
+                unselect(binding.topBtn4, binding.topBtn4Tv)
+                unselect(binding.topBtn5, binding.topBtn5Tv)
+            }
+            "3" -> {
+                unselect(binding.topBtn1,binding.topBtn1Tv)
+                unselect(binding.topBtn2, binding.topBtn2Tv)
+                select(binding.topBtn3, binding.topBtn3Tv)
+                unselect(binding.topBtn4, binding.topBtn4Tv)
+                unselect(binding.topBtn5, binding.topBtn5Tv)
+            }
+            "4" -> {
+                unselect(binding.topBtn1,binding.topBtn1Tv)
+                unselect(binding.topBtn2, binding.topBtn2Tv)
+                unselect(binding.topBtn3, binding.topBtn3Tv)
+                select(binding.topBtn4, binding.topBtn4Tv)
+                unselect(binding.topBtn5, binding.topBtn5Tv)
             }
         }
 
-        return (binding.root)
     }
 
     private fun select(view : LinearLayout, text : TextView){
@@ -185,6 +217,32 @@ class PesananFragment : Fragment() {
     private fun unselect(view : LinearLayout, text : TextView){
         view.background = colorNotSelected
         text.setTypeface(null, Typeface.NORMAL)
+    }
+
+    private fun autoRefresh(isRefreshing: Boolean) {
+        refreshing = isRefreshing
+
+        if (isRefreshing) {
+            refreshJob = CoroutineScope(Dispatchers.Main).launch {
+                while (refreshing) {
+                    Log.d("Coroutine", "Refresh")
+                    Pesanan.getFromDB(){
+                        pesananAdapter.list = Pesanan.getPesananArrayListByStatus(activeStatusWindow)
+                        if(pesananAdapter.list.size == 0){
+                            binding.tvPesananKosong.visibility = View.VISIBLE
+                        } else {
+                            binding.tvPesananKosong.visibility = View.INVISIBLE
+                        }
+                        pesananAdapter.notifyDataSetChanged()
+                        setActiveWindow(activeStatusWindow)
+                        binding.swipeRefreshLayout.isRefreshing = false
+                    }
+                    delay(5000)
+                }
+            }
+        } else {
+            refreshJob?.cancel()
+        }
     }
 
     companion object {

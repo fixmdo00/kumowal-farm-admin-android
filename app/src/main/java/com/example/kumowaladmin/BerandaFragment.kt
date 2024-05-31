@@ -53,6 +53,11 @@ class BerandaFragment : Fragment() {
             startActivity(intent)
         }
 
+        binding.btnKelolaAkun.setOnClickListener {
+            val intent = Intent(context, KelolaAkunActivity::class.java)
+            startActivity(intent)
+        }
+
         return (binding.root)
     }
 

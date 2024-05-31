@@ -37,16 +37,22 @@ class DialogUbahHargaActivity : AppCompatActivity() {
         }
 
         binding.btnSimpan.setOnClickListener {
-            ubahHargaProduk(nama_produk, binding.itHarga.text.toString()){
-                when (it){
-                    true -> {
-                        val intent = Intent(this, KelolaHargaActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(intent)
-                        finish()
-                    }
-                    false -> {
-                        Toast.makeText(this, "Gagal", Toast.LENGTH_LONG).show()
+            if(binding.itHarga.text.toString().isBlank()){
+                Toast.makeText(this,"Tidak boleh kosong", Toast.LENGTH_LONG).show()
+            } else {
+                ubahHargaProduk(nama_produk, binding.itHarga.text.toString()) {
+                    when (it) {
+                        true -> {
+                            val intent = Intent(this, KelolaHargaActivity::class.java)
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(intent)
+                            finish()
+                        }
+
+                        false -> {
+                            Toast.makeText(this, "Gagal", Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }

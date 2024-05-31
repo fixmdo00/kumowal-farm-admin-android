@@ -15,7 +15,7 @@ import com.example.kumowaladmin.dataClass.PesananData
 import org.json.JSONArray
 import org.json.JSONException
 
-object Pesanan {
+object Akun {
 
     var _pesanan = JSONArray()
     private val _livePesanan = MutableLiveData<JSONArray>()
@@ -28,29 +28,6 @@ object Pesanan {
             Request.Method.GET, url, null,
             { response ->
                 progressBar.visibility = View.GONE
-                try {
-                    // Ambil data pertama dari JSON Array
-                    _pesanan = response
-                    _livePesanan.postValue(response)
-                    callback(true)
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                    callback(false)
-                }
-            },
-            { error ->
-                Log.d("err",error.toString())
-                callback(false)
-            }
-        )
-        RQ.getRQ().add(jsonArrayRequest)
-    }
-
-    fun getFromDB(callback : (Boolean) -> Unit){
-        val url = "https://kumowal.my.id/api_admin/pesanan_get.php?"
-        val jsonArrayRequest = JsonArrayRequest(
-            Request.Method.GET, url, null,
-            { response ->
                 try {
                     // Ambil data pertama dari JSON Array
                     _pesanan = response
